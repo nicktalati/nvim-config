@@ -9,6 +9,7 @@ vim.keymap.set('i', 'kj', '<ESC>', {noremap = true})
 vim.keymap.set('n', '<c-u>', '<c-u>zz', {noremap = true})
 vim.keymap.set('n', '<c-d>', '<c-d>zz', {noremap = true})
 vim.keymap.set('i', '<c-n>', '<c-x><c-o>', {noremap = true})
+vim.keymap.set('n', '<leader>fq', ':q!<cr>', {noremap = true})
 
 -- options
 
@@ -45,6 +46,16 @@ vim.api.nvim_create_autocmd('FileType', {
 vim.api.nvim_create_autocmd({"BufRead", "BufNewFile"}, {
 	pattern = "*.mojo",
 	command = "set filetype=python",
+})
+
+vim.api.nvim_create_autocmd({"BufEnter"}, {
+  pattern = "*",
+  callback = function()
+    local first_line = vim.api.nvim_buf_get_lines(0, 0, 1, false)[1]
+    if first_line and first_line:match("^-%[ RECORD 1 %]-------------------------") then
+      vim.bo.filetype = 'sql_records'
+    end
+  end,
 })
 
 -- plugins
@@ -110,6 +121,7 @@ require('nvim-treesitter.configs').setup {
 local lspconfig = require("lspconfig")
 
 local on_lsp_attach = function(client, bufnr)
+	print("LSP started.")
 	vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 
 	local opts = {noremap=true, silent=true}
@@ -134,4 +146,13 @@ end
 
 lspconfig.pyright.setup{
 	on_attach = on_lsp_attach
+}
+
+local util = require("lspconfig.util")
+
+lspconfig.sqlls.setup{
+	on_attach = on_lsp_attach,
+	cmd = {"sql-language-server", "up", "--method", "stdio"},
+	filetypes = {"sql", "mysql"},
+	root_dir = util.root_pattern(".sqllsrc.json")
 }
