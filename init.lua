@@ -10,6 +10,7 @@ vim.keymap.set('n', '<c-u>', '<c-u>zz', {noremap = true})
 vim.keymap.set('n', '<c-d>', '<c-d>zz', {noremap = true})
 vim.keymap.set('i', '<c-n>', '<c-x><c-o>', {noremap = true})
 vim.keymap.set('n', '<leader>fq', ':q!<cr>', {noremap = true})
+vim.keymap.set('x', '<leader>dp', [["_do<esc>p]], {noremap = true})
 
 -- options
 
@@ -144,8 +145,24 @@ local on_lsp_attach = function(client, bufnr)
 	vim.api.nvim_buf_set_keymap(bufnr, 'i', '<c-k>', '<Cmd>lua vim.lsp.buf.hover()<CR>', opts)
 end
 
-lspconfig.pyright.setup{
-	on_attach = on_lsp_attach
+-- lspconfig.pyright.setup{
+-- 	on_attach = on_lsp_attach,
+-- }
+
+lspconfig.basedpyright.setup{
+	on_attach = on_lsp_attach,
+	settings = {
+		basedpyright = {
+			typeCheckingMode = "all",
+			analysis = {
+				diagnosticSeverityOverrides = {
+					reportMissingParameterType = false,
+					reportUnknownParameterType = false,
+					reportImplicitOverride = false
+				},
+			},
+		},
+	}
 }
 
 local util = require("lspconfig.util")
@@ -156,3 +173,19 @@ lspconfig.sqlls.setup{
 	filetypes = {"sql", "mysql"},
 	root_dir = util.root_pattern(".sqllsrc.json")
 }
+
+lspconfig.tsserver.setup{
+	on_attach = on_lsp_attach,
+	filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
+	init_options = {
+		hostInfo = "neovim"
+	}
+}
+
+vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
+  vim.lsp.diagnostic.on_publish_diagnostics, {
+    virtual_text = true,
+    signs = true,
+    update_in_insert = true,
+  }
+)
