@@ -197,7 +197,7 @@ lspconfig.sqlls.setup{
 	root_dir = util.root_pattern(".sqllsrc.json")
 }
 
-lspconfig.tsserver.setup{
+lspconfig.ts_ls.setup{
 	on_attach = on_lsp_attach,
 	filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
 	init_options = {
